@@ -1,46 +1,100 @@
-# Getting Started with Create React App
+# 2チャンネル同時音声認識アプリ
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+このプロジェクトは、Web Speech Recognition APIを使用して2つの異なるマイク入力から同時に音声認識を行い、文字起こしを表示するReactアプリケーションです。
 
-## Available Scripts
+## 概要
 
-In the project directory, you can run:
+このアプリケーションは以下の機能を提供します：
 
-### `npm start`
+- 2つの異なるマイク入力からの同時音声認識
+- リアルタイムでの文字起こし表示（確定/未確定テキスト）
+- 各チャンネルごとの文字起こし結果の表示
+- 文字起こし結果のクリア機能
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## システム構成
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+アプリケーションは以下のコンポーネントで構成されています：
 
-### `npm test`
+- **App**: メインアプリケーションコンポーネント
+- **SpeechRecognition**: 音声認識機能を提供するコンポーネント
+- **TranscriptDisplay**: 文字起こし結果を表示するコンポーネント
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## シーケンス図
 
-### `npm run build`
+以下は、音声認識処理のシーケンス図です：
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant App as Appコンポーネント
+    participant SR as SpeechRecognitionコンポーネント
+    participant API as Web Speech API
+    participant TD as TranscriptDisplayコンポーネント
+    
+    User->>SR: マイクデバイスを選択
+    SR->>API: 音声認識開始
+    User->>SR: 録音開始ボタンをクリック
+    SR->>API: 音声認識開始
+    
+    loop 音声認識処理
+        API->>SR: 音声認識結果（未確定）
+        SR->>App: onTranscriptUpdate(channelId, text, false)
+        App->>TD: interimTranscripts更新
+        
+        API->>SR: 音声認識結果（確定）
+        SR->>App: onTranscriptUpdate(channelId, text, true)
+        App->>TD: transcripts更新
+    end
+    
+    User->>SR: 録音停止ボタンをクリック
+    SR->>API: 音声認識停止
+    
+    User->>App: クリアボタンをクリック
+    App->>TD: transcripts & interimTranscripts クリア
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## コンポーネント図
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+アプリケーションのコンポーネント構造は以下の通りです：
 
-### `npm run eject`
+```mermaid
+graph TD
+    A[App] --> B[SpeechRecognition]
+    A --> C[TranscriptDisplay]
+    B -- onTranscriptUpdate --> A
+    A -- transcripts/interimTranscripts --> C
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## データフロー
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```mermaid
+flowchart LR
+    A[マイク入力] --> B[Web Speech API]
+    B --> C{音声認識処理}
+    C -->|未確定テキスト| D[interimTranscripts]
+    C -->|確定テキスト| E[transcripts]
+    D --> F[TranscriptDisplay]
+    E --> F
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 技術スタック
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- React 19.0.0
+- TypeScript 4.9.5
+- Web Speech Recognition API
+- Create React App
 
-## Learn More
+## 使用方法
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. アプリケーションを起動します
+2. 各チャンネルのマイクデバイスを選択します
+3. 「録音開始」ボタンをクリックして音声認識を開始します
+4. 話した内容がリアルタイムで文字起こしされます
+5. 「録音停止」ボタンをクリックして音声認識を停止します
+6. 「文字起こし結果をクリア」ボタンで結果をクリアできます
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 注意事項
+
+- Web Speech Recognition APIはブラウザによってサポート状況が異なります
+- 最新のChrome、Edge、Safariでの使用を推奨します
+- 確定した文字起こし結果のみ保持されます
